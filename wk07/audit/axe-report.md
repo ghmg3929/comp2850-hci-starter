@@ -24,7 +24,7 @@
 **Description**: Ensure <img> elements have alternative text or a role of none or presentation.
 **Impact**: Screen readers can't describe the image without alternative text.
 **Fix**: Add alt attribute to image.
-**Status**: 
+**Priority**: MEDIUM
 
 ---
 
@@ -35,32 +35,32 @@
 **Rule**: `label` (WCAG 1.3.1, 4.1.2)
 **Description**: Link elements are inaccessible to screen readers.
 **Impact**: Screen readers don't describe the link.
-**Fix**: Add image attribute to link.
-**Status**: 
+**Fix**: Add link text.
+**Priority**: LOW
 
 ### Issue 3: Insufficient color contrast (Serious)
 **Element**: `<<button type="submit">Add Task</button>`
 **Rule**: `color-contrast` (WCAG 1.4.3)
 **Description**: Text color #6c757d on background color #0172ad = 1.11 (fails AA 4.5:1)
 **Impact**: People with low vision struggle to read button text.
-**Fix**: Change button color to #495057 (darker gray, 7:1 contrast).
-**Status**: 
+**Fix**: Change button color to #FFFFFF (white, 7:1 contrast).
+**Priority**:: ⚠️ HIGH 
 
 ### Issue 4: Insufficient color contrast (Serious)
 **Element**: `<button type="submit" aria-label="Delete task: Test Task">Delete</button>`
 **Rule**: `color-contrast` (WCAG 1.4.3)
 **Description**: Text color #6c757d on background color #0172ad = 1.11 (fails AA 4.5:1)
 **Impact**: People with low vision struggle to read button text.
-**Fix**: Change button color to #495057 (darker gray, 7:1 contrast).
-**Status**: 
+**Fix**: Change button color to #FFFFFF (white, 7:1 contrast).
+**Priority**:: ⚠️ HIGH 
 
 ### Issue 5: Insufficient color contrast (Serious)
 **Element**: `<button type="submit" aria-label="Delete task: Kotlin 2.2.21 Works">Delete</button>`
 **Rule**: `color-contrast` (WCAG 1.4.3)
 **Description**: Text color #6c757d on background color #0172ad = 1.11 (fails AA 4.5:1)
 **Impact**: People with low vision struggle to read button text.
-**Fix**: Change button color to #495057 (darker gray, 7:1 contrast).
-**Status**: 
+**Fix**: Change button color to #FFFFFF (white, 7:1 contrast).
+**Priority**:: ⚠️ HIGH 
 
 
 ---
