@@ -1,4 +1,19 @@
 {% extends "_layout/base.peb" %}
+<form action="/tasks" method="get"
+      hx-get="/tasks/fragment"
+      hx-target="#task-area"
+      hx-trigger="keyup changed delay:300ms, submit from:closest(form)"
+      hx-push-url="true">
+  <label for="q">Filter tasks</label>
+  <input id="q" name="q" value="{{ query|default('') }}" type="search"
+         aria-describedby="q-hint">
+  <small id="q-hint">Type to filter; works without JavaScript.</small>
+  <button type="submit">Apply</button>
+</form>
+<div id="task-area">
+  {% include "tasks/_list.peb" %}
+  {% include "tasks/_pager.peb" %}
+<\div>
 
 {% block content %}
 <h1>Tasks</h1>
