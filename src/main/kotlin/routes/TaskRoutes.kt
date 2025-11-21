@@ -64,7 +64,8 @@ fun Route.taskRoutes() {
      * GET /tasks - List all tasks
      * Returns full page (no HTMX differentiation in Week 6)
      */
-    get("/tasks") {
+
+    /*get("/tasks") {
         val model =
             mapOf(
                 "title" to "Tasks",
@@ -74,6 +75,24 @@ fun Route.taskRoutes() {
         val writer = StringWriter()
         template.evaluate(writer, model)
         call.respondText(writer.toString(), ContentType.Text.Html)
+    }*/
+
+    get("/tasks") {
+        val query = call.request.queryParameters["q"].orEmpty()
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val data = repo.search(query = query, page = page, size = 10)
+        val model = mapOf("title" to "Tasks", "page" to data, "query" to query)
+        call.respondHtml(PebbleRender.render("tasks/index.peb", model))
+    }
+
+    get("/tasks/fragment") {
+        val query = call.request.queryParameters["q"].orEmpty()
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val data = repo.search(query = query, page = page, size = 10)
+        val list = PebbleRender.render("tasks/_list.peb", mapOf("page" to data, "query" to query))
+        val pager = PebbleRender.render("tasks/_pager.peb", mapOf("page" to data, "query" to query))
+        val status = """<div id="status" hx-swap-oob="true">Found ${data.total} tasks.</div>"""
+        call.respondText(list + pager + status, ContentType.Text.Html)
     }
 
     /**

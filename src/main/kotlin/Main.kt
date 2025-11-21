@@ -13,6 +13,10 @@ import routes.configureHealthCheck
 import utils.SessionData
 import java.io.StringWriter
 import io.ktor.util.*
+import io.ktor.http.ContentType     // For custom error page content types
+import io.ktor.http.HttpStatusCode  // For status codes in error handlers
+import io.ktor.server.plugins.statuspages.*  // Status pages plugin (StatusPages, status)
+
 
 /**
  * NOTE FOR NON-INTELLIJ IDEs (VSCode, Eclipse, etc.):
