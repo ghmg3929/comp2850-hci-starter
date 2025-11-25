@@ -130,9 +130,8 @@ fun Route.taskRoutes(store: TaskStore = TaskStore()) {
      * Dual-mode: HTMX empty response or PRG redirect
      */
     post("/tasks/{id}/delete") {
-        val id = call.parameters["id"]?.toIntOrNull() ?: return@delete
-        TaskRepository.delete(id)
-        //val removed = id?.let { TaskRepository.delete(it) } ?: false
+        val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid id")
+        val removed = id?.let { store.delete(id) } ?: false
 
         if (call.isHtmx()) {
             val message = if (removed) "Task deleted." else "Could not delete task."
@@ -172,5 +171,4 @@ fun Route.taskRoutes(store: TaskStore = TaskStore()) {
         )
         call.respondHtml(PebbleRender.render("tasks/index.peb", model))
     }
-
 }
