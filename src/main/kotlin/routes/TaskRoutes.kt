@@ -8,6 +8,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.pebbletemplates.pebble.PebbleEngine
 import java.io.StringWriter
+import model.Task
+import storage.TaskStore
 
 /**
  * NOTE FOR NON-INTELLIJ IDEs (VSCode, Eclipse, etc.):
@@ -45,7 +47,7 @@ import java.io.StringWriter
  * - Week 8: Add pagination, search
  */
 
-fun Route.taskRoutes() {
+fun Route.taskRoutes(store: TaskStore = TaskStore()) {
     val pebble =
         PebbleEngine
             .Builder()
@@ -65,7 +67,7 @@ fun Route.taskRoutes() {
      * Returns full page (no HTMX differentiation in Week 6)
      */
 
-    /*get("/tasks") {
+    get("/tasks") {
         val model =
             mapOf(
                 "title" to "Tasks",
@@ -75,24 +77,6 @@ fun Route.taskRoutes() {
         val writer = StringWriter()
         template.evaluate(writer, model)
         call.respondText(writer.toString(), ContentType.Text.Html)
-    }*/
-
-    get("/tasks") {
-        val query = call.request.queryParameters["q"].orEmpty()
-        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
-        val data = repo.search(query = query, page = page, size = 10)
-        val model = mapOf("title" to "Tasks", "page" to data, "query" to query)
-        call.respondHtml(PebbleRender.render("tasks/index.peb", model))
-    }
-
-    get("/tasks/fragment") {
-        val query = call.request.queryParameters["q"].orEmpty()
-        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
-        val data = repo.search(query = query, page = page, size = 10)
-        val list = PebbleRender.render("tasks/_list.peb", mapOf("page" to data, "query" to query))
-        val pager = PebbleRender.render("tasks/_pager.peb", mapOf("page" to data, "query" to query))
-        val status = """<div id="status" hx-swap-oob="true">Found ${data.total} tasks.</div>"""
-        call.respondText(list + pager + status, ContentType.Text.Html)
     }
 
     /**
@@ -116,7 +100,8 @@ fun Route.taskRoutes() {
             }
         }
 
-        val task = TaskRepository.add(title)
+        val task = Task(title = title)  // UUID auto-generated
+        store.add(task)
 
         if (call.isHtmx()) {
             // Return HTML fragment for new task
@@ -145,8 +130,9 @@ fun Route.taskRoutes() {
      * Dual-mode: HTMX empty response or PRG redirect
      */
     post("/tasks/{id}/delete") {
-        val id = call.parameters["id"]?.toIntOrNull()
-        val removed = id?.let { TaskRepository.delete(it) } ?: false
+        val id = call.parameters["id"]?.toIntOrNull() ?: return@delete
+        TaskRepository.delete(id)
+        //val removed = id?.let { TaskRepository.delete(it) } ?: false
 
         if (call.isHtmx()) {
             val message = if (removed) "Task deleted." else "Could not delete task."
@@ -166,4 +152,25 @@ fun Route.taskRoutes() {
     // - GET /tasks/{id}/edit - Show edit form (dual-mode)
     // - POST /tasks/{id}/edit - Save edits with validation (dual-mode)
     // - GET /tasks/{id}/view - Cancel edit (HTMX only)
+
+    get("/tasks") {
+        val query = call.request.queryParameters["q"].orEmpty()
+        val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+        val tasks = store.search(query)
+        val data = Page.paginate(tasks.map { it.toPebbleContext() }, page, pageSize = 10)
+
+        // Add session info for footer
+        val sessionId = call.sessions.get<UserSession>()?.id ?: "guest"
+        val isHtmx = call.request.headers["HX-Request"]?.equals("true", ignoreCase = true) == true
+
+        val model = mapOf(
+            "title" to "Tasks",
+            "page" to data,
+            "query" to query,
+            "sessionId" to sessionId,
+            "isHtmx" to isHtmx
+        )
+        call.respondHtml(PebbleRender.render("tasks/index.peb", model))
+    }
+
 }
